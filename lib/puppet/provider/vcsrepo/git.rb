@@ -38,13 +38,11 @@ Puppet::Type.type(:vcsrepo).provide(:git, :parent => Puppet::Provider::Vcsrepo) 
   end
 
   def latest
-    branch = on_branch?
-    if branch == 'master'
-      return get_revision('origin/HEAD')
-    elsif branch == '(no branch)'
+    branch = on_branch
+    if branch =~ /~/
       return get_revision('HEAD')
     else
-      return get_revision('origin/%s' % branch)
+      return get_revision(tracking_remote(branch) + '/' + tracking_branch(branch))
     end
   end
 
@@ -234,8 +232,16 @@ Puppet::Type.type(:vcsrepo).provide(:git, :parent => Puppet::Provider::Vcsrepo) 
     at_path { git_with_identity('branch', '-a') }.gsub('*', ' ').split(/\n/).map { |line| line.strip }
   end
 
-  def on_branch?
-    at_path { git_with_identity('branch', '-a') }.split(/\n/).grep(/\*/).first.to_s.gsub('*', '').strip
+  def on_branch
+    at_path { git_with_identity('name-rev', '--name-only', 'HEAD') }.strip
+  end
+
+  def tracking_branch( branch = self.on_branch )
+    at_path { git_with_identity('config', 'branch.' + branch + '.merge') }.strip
+  end
+
+  def tracking_remote( branch = self.on_branch )
+    at_path { git_with_identity('config', 'branch.' + branch + '.remote') }.strip
   end
 
   def tags
