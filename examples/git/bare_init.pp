@@ -1,4 +1,4 @@
-vcsrepo { "/tmp/vcstest-git-bare":
-  ensure => bare,
-  provider => git
+vcsrepo { '/tmp/vcstest-git-bare':
+  ensure   => bare,
+  provider => git,
 }

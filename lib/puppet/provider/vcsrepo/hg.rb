@@ -4,7 +4,6 @@ Puppet::Type.type(:vcsrepo).provide(:hg, :parent => Puppet::Provider::Vcsrepo) d
   desc "Supports Mercurial repositories"
 
   optional_commands   :hg => 'hg'
-  defaultfor :hg => :exists
   has_features :reference_tracking
 
   def create
@@ -65,7 +64,10 @@ Puppet::Type.type(:vcsrepo).provide(:hg, :parent => Puppet::Provider::Vcsrepo) d
 
   def revision=(desired)
     at_path do
-      hg('pull')
+      begin
+        hg('pull')
+      rescue
+      end
       begin
         hg('merge')
       rescue Puppet::ExecutionFailure
